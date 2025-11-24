@@ -1,16 +1,19 @@
 "use client";
-import { http, createConfig } from "wagmi";
+import { publicClient, createConfig } from "wagmi";
 import { base, mainnet } from "wagmi/chains";
 import { injected, metaMask } from "wagmi/connectors";
 
 export const wagmiConfig = createConfig({
   chains: [base, mainnet],
-  connectors: [
+connectors: [
+  new InjectedConnector({ chains: [base, mainnet] }),
+  new MetaMaskConnector({ chains: [base, mainnet] }),
+],
     injected(),
     metaMask(),
   ],
   transports: {
-    [base.id]: http(),
-    [mainnet.id]: http(),
+    [base.id]: publicClient(),
+    [mainnet.id]: publicClient(),
   },
 });
