@@ -1,0 +1,8 @@
+{
+  "name": "QuestQuest",
+  "description": "Complete daily quests, earn NFT badges, share achievements",
+  "icon": "https://yourdomain.com/icon.png",
+  "url": "https://questquest.vercel.app",
+  "requested_permissions": ["signer", "post", "storage"],
+  "redirect_urls": ["https://questquest.vercel.app/*"]
+}
