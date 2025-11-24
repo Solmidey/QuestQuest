@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { WagmiConfig, useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import { WagmiConfig, useAccount, useWriteContract, usePrepareWriteContract } from "wagmi";
 import { wagmiConfig } from "./lib/wagmi";
 import { QUESTQUEST_ADDRESS, QUESTQUEST_ABI } from "./lib/contract";
 import QuestCard from "./components/QuestCard";
@@ -36,13 +36,13 @@ export default function HomePage() {
     fetchQuests();
   }, []);
 
-  const completeQuestWrite = usePrepareContractWrite({
+  const completeQuestWrite = usePrepareWriteContract({
     address: QUESTQUEST_ADDRESS,
     abi: QUESTQUEST_ABI,
     functionName: "completeQuest",
   });
 
-  const completeQuest = useContractWrite(completeQuestWrite.config);
+  const completeQuest = useWriteContract(completeQuestWrite.config);
 
   const handleCompleteQuest = async (questId: number) => {
     try {
