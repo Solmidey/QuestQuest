@@ -1,3 +1,0 @@
-module.exports=[62459,a=>{a.v([{inputs:[{internalType:"uint256",name:"questId",type:"uint256"}],name:"completeQuest",outputs:[],stateMutability:"nonpayable",type:"function"}])},65014,a=>{a.v([{inputs:[],name:"name",outputs:[{internalType:"string",name:"",type:"string"}],stateMutability:"view",type:"function"}])},35681,a=>{a.v(b=>Promise.all(["server/chunks/ssr/node_modules_@noble_curves_esm_secp256k1_fbba09d4.js"].map(b=>a.l(b))).then(()=>b(54476)))}];
-
-//# sourceMappingURL=_84a7f485._.js.map
