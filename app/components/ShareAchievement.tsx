@@ -1,18 +1,10 @@
 "use client";
-import { useFarcaster } from "minikit-react";
 
-export default function ShareAchievement({ questName }) {
-  const { share } = useFarcaster();
-
+export default function ShareAchievement({ questName }: { questName: string }) {
   return (
-    <button
-      onClick={() =>
-        share({
-          text: `I just completed "${questName}" on QuestQuest! 🎯🏆`,
-          url: "https://questquest.vercel.app"
-        })
-      }
-      className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+    <button 
+      onClick={() => alert('Share feature coming soon!')}
+      className="px-4 py-2 bg-blue-500 text-white rounded"
     >
       Share Achievement
     </button>

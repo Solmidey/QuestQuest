@@ -1,17 +1,16 @@
 "use client";
-import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { base, mainnet, goerli } from "wagmi/chains";
-import { publicProvider } from "wagmi/providers/public";
-import { MetaMaskConnector } from "wagmi/connectors/metaMask";
-
-export const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [base, mainnet, goerli],
-  [publicProvider()]
-);
+import { http, createConfig } from "wagmi";
+import { base, mainnet } from "wagmi/chains";
+import { injected, metaMask } from "wagmi/connectors";
 
 export const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors: [new MetaMaskConnector({ chains })],
-  publicClient,
-  webSocketPublicClient
+  chains: [base, mainnet],
+  connectors: [
+    injected(),
+    metaMask(),
+  ],
+  transports: {
+    [base.id]: http(),
+    [mainnet.id]: http(),
+  },
 });
