@@ -1,20 +1,21 @@
 "use client";
-import { useFarcaster } from "minikit-react";
 
-export default function ShareAchievement({ questName }) {
-  const { share } = useFarcaster();
+export default function ShareAchievement({ questName }: { questName: string }) {
+  const handleShare = () => {
+    const shareText = `I just completed the quest: ${questName}!`;
+    const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+    
+    if (typeof window !== 'undefined') {
+      window.open(shareUrl, '_blank');
+    }
+  };
 
   return (
-    <button
-      onClick={() =>
-        share({
-          text: `I just completed "${questName}" on QuestQuest! 🎯🏆`,
-          url: "https://questquest.vercel.app"
-        })
-      }
-      className="px-4 py-2 bg-blue-600 text-white rounded-xl"
+    <button 
+      onClick={handleShare}
+      className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
     >
-      Share Achievement
+      Share on Farcaster
     </button>
   );
 }

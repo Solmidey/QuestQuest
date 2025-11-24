@@ -1,1 +1,16 @@
-'use client';\n\nimport { configureChains, createConfig } from 'wagmi';\nimport { mainnet, base } from 'wagmi/chains';\nimport { MetaMaskConnector } from 'wagmi/connectors/metaMask';\nimport { WalletConnectConnector } from 'wagmi/connectors/walletConnect';\n\nconst { publicClient } = configureChains([mainnet, base], []);\n\nexport const wagmiClient = createConfig({\n  autoConnect: true,\n  connectors: [\n    new MetaMaskConnector({ chains: [mainnet, base] }),\n    new WalletConnectConnector({ chains: [mainnet, base], options: { qrcode: true } }),\n  ],\n  publicClient,\n});
+"use client";
+import { http, createConfig } from "wagmi";
+import { base, mainnet } from "wagmi/chains";
+import { injected, metaMask } from "wagmi/connectors";
+
+export const wagmiConfig = createConfig({
+  chains: [base, mainnet],
+  connectors: [
+    injected(),
+    metaMask(),
+  ],
+  transports: {
+    [base.id]: http(),
+    [mainnet.id]: http(),
+  },
+});
