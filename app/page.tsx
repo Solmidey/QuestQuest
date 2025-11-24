@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Navbar } from '../components/Navbar';
 import { QuestItem } from '../components/QuestItem';
 import { BadgeReward } from '../components/BadgeReward';
 import { MOCK_QUESTS } from '../constants';
 import { Quest, QuestStatus } from '../types';
 import { verifyQuestOnChain, mintDailyBadge } from '../services/mockChain';
-import { Sparkles, Trophy, Lock } from 'lucide-react';
+import { Sparkles, Trophy, Lock, Award } from 'lucide-react';
 
-// Utility for date formatting
 const getTodayString = () => {
   const date = new Date();
   return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -21,22 +21,20 @@ const getDayId = () => {
 };
 
 export default function Page() {
-  // --- State ---
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   
   const [quests, setQuests] = useState<Quest[]>([]);
   const [isClaimed, setIsClaimed] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  // --- Derived State ---
   const completedCount = useMemo(() => quests.filter(q => q.status === QuestStatus.COMPLETED).length, [quests]);
   const progressPercentage = useMemo(() => (quests.length > 0 ? (completedCount / quests.length) * 100 : 0), [quests, completedCount]);
   const allCompleted = quests.length > 0 && completedCount === quests.length;
 
-  // --- Effects ---
   useEffect(() => {
-    // Load initial quests (simulating fetching from contract or JSON)
     const initialQuests = MOCK_QUESTS.map(q => ({
       ...q,
       type: q.type as any,
@@ -45,30 +43,26 @@ export default function Page() {
     setQuests(initialQuests);
   }, []);
 
-  // --- Handlers ---
   const handleConnect = async () => {
-    setIsConnecting(true);
-    // Simulate connection delay
-    setTimeout(() => {
-      setWalletAddress("0x71C7656EC7ab88b098defB751B7401B5f6d8976F");
-      setIsConnecting(false);
-    }, 800);
+    const connector = connectors[0];
+    if (connector) {
+      connect({ connector });
+    }
   };
 
   const handleDisconnect = () => {
-    setWalletAddress(null);
+    disconnect();
     setQuests(prev => prev.map(q => ({ ...q, status: QuestStatus.PENDING })));
     setIsClaimed(false);
   };
 
   const handleVerifyQuest = async (id: number) => {
-    if (!walletAddress) return;
+    if (!address) return;
 
-    // Optimistic UI update to verifying
     setQuests(prev => prev.map(q => q.id === id ? { ...q, status: QuestStatus.VERIFYING } : q));
 
     try {
-      const success = await verifyQuestOnChain(id, walletAddress);
+      const success = await verifyQuestOnChain(id, address);
       
       setQuests(prev => prev.map(q => 
         q.id === id ? { ...q, status: success ? QuestStatus.COMPLETED : QuestStatus.FAILED } : q
@@ -79,11 +73,11 @@ export default function Page() {
   };
 
   const handleClaimReward = async () => {
-    if (!walletAddress || !allCompleted) return;
+    if (!address || !allCompleted) return;
     
     setIsMinting(true);
     try {
-      await mintDailyBadge(getDayId(), walletAddress);
+      await mintDailyBadge(getDayId(), address);
       setIsClaimed(true);
     } catch (e) {
       console.error("Mint failed", e);
@@ -95,27 +89,65 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-base-blue selection:text-white">
       <Navbar 
-        walletAddress={walletAddress}
-        isConnecting={isConnecting}
+        walletAddress={address || null}
+        isConnecting={false}
         onConnect={handleConnect}
         onDisconnect={handleDisconnect}
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-20">
         
-        {/* Header Section */}
-        <div className="mb-8 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2">
-            Today's Quests
-          </h1>
-          <p className="text-slate-400 text-lg flex items-center justify-center sm:justify-start gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            {getTodayString()}
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2">
+              Today's Quests
+            </h1>
+            <p className="text-slate-400 text-lg flex items-center justify-center sm:justify-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              {getTodayString()}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowLeaderboard(!showLeaderboard)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <Award className="w-5 h-5" />
+            Leaderboard
+          </button>
         </div>
 
-        {/* View Switcher: Quests vs Reward */}
-        {isClaimed ? (
+        {showLeaderboard ? (
+          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+            <h2 className="text-2xl font-bold mb-4">🏆 Top Questers</h2>
+            <div className="space-y-3">
+              {[
+                { rank: 1, address: '0x1234...5678', quests: 150, badges: 45 },
+                { rank: 2, address: '0xabcd...ef00', quests: 142, badges: 42 },
+                { rank: 3, address: '0x9876...5432', quests: 138, badges: 41 },
+                { rank: 4, address: address || '0x0000...0000', quests: completedCount, badges: isClaimed ? 1 : 0 },
+              ].map((player) => (
+                <div
+                  key={player.rank}
+                  className={`flex items-center justify-between p-4 rounded-lg ${
+                    player.address === address
+                      ? 'bg-blue-500/20 border border-blue-500/50'
+                      : 'bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-slate-500">#{player.rank}</div>
+                    <div>
+                      <div className="font-mono text-sm">{player.address}</div>
+                      <div className="text-xs text-slate-400">
+                        {player.quests} quests · {player.badges} badges
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : isClaimed ? (
           <BadgeReward 
             dayLabel={getTodayString()}
             metadata={{
@@ -128,7 +160,6 @@ export default function Page() {
         ) : (
           <div className="space-y-8 animate-[slideUp_0.4s_ease-out]">
             
-            {/* Progress Bar */}
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
               <div className="flex justify-between items-end mb-4">
                 <div>
@@ -155,27 +186,24 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Quest List */}
             <div className="space-y-4">
               {quests.map((quest) => (
                 <QuestItem 
                   key={quest.id}
                   quest={quest}
                   onVerify={handleVerifyQuest}
-                  disabled={!walletAddress}
+                  disabled={!isConnected}
                 />
               ))}
             </div>
 
-            {/* Locked State Message if not connected */}
-            {!walletAddress && (
+            {!isConnected && (
               <div className="flex items-center justify-center gap-2 p-4 bg-yellow-500/10 text-yellow-500 rounded-lg border border-yellow-500/20 text-sm">
                 <Lock className="w-4 h-4" />
                 Connect your wallet to start completing quests.
               </div>
             )}
 
-            {/* Claim Button Area */}
             {allCompleted && (
               <div className="fixed bottom-6 left-0 right-0 px-4 flex justify-center z-40">
                 <button

@@ -1,24 +1,21 @@
-"use client";
+import type { Metadata } from "next";
 import "./globals.css";
-import { WagmiProvider } from "wagmi";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { wagmiConfig } from "./lib/wagmi";
+import { Providers } from "./providers";
 
-const queryClient = new QueryClient();
+export const metadata: Metadata = {
+  title: "QuestQuest - Daily Quests & NFT Rewards",
+  description: "Complete daily quests and earn NFT rewards on Base",
+};
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            {children}
-          </QueryClientProvider>
-        </WagmiProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
