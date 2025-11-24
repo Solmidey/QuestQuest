@@ -1,0 +1,5 @@
+{
+  "name": "QuestQuest",
+  "description": "A Base Mini-App for daily on-chain quests. Complete tasks, verify on-chain, and mint a daily ERC-1155 Badge to share on Farcaster.",
+  "requestFramePermissions": []
+}
