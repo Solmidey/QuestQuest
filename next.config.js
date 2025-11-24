@@ -1,1 +1,1 @@
-module.exports = { experimental: { esmExternals: false }, webpack: config => { config.module.rules.push({ test: /node_modules\/thread-stream/, use: 'null-loader' }); return config; } };
+/** @type {import('next').NextConfig} */ const nextConfig = { reactStrictMode: true, swcMinify: true, experimental: { appDir: true }, images: { remotePatterns: [{ protocol: 'https', hostname: '**' }] }, eslint: { ignoreDuringBuilds: true } }; export default nextConfig;
