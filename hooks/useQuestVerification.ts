@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAccount, useBalance, useWriteContract, useSignMessage, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, recoverMessageAddress } from 'viem';
-import { Quest, QuestType, QuestStatus } from '../types';
+import { Quest, QuestType } from '../types';
 import { QUEST_QUEST_ADDRESS, QUEST_QUEST_ABI, ACHIEVEMENTS_NFT_ADDRESS, ACHIEVEMENTS_NFT_ABI, CHAIN } from '../lib/contract';
 
 export function useQuestVerification() {
@@ -52,7 +52,7 @@ export function useQuestVerification() {
 
   // Complete quest on-chain
   const completeQuestOnChain = async (questId: number): Promise<string> => {
-    if (!address || !chain) throw new Error('Wallet not connected');
+    if (!address) throw new Error('Wallet not connected');
     
     const hash = await writeQuest({
       address: QUEST_QUEST_ADDRESS,
@@ -68,7 +68,7 @@ export function useQuestVerification() {
 
   // Mint Achievement NFT (special quest)
   const mintAchievementNFT = async (): Promise<string> => {
-    if (!address || !chain) throw new Error('Wallet not connected');
+    if (!address) throw new Error('Wallet not connected');
     
     const hash = await writeNFT({
       address: ACHIEVEMENTS_NFT_ADDRESS,
@@ -112,6 +112,8 @@ export function useQuestVerification() {
           // For mint NFT quest, handle specially
           if (quest.title.toLowerCase().includes('mint')) {
             txHash = await mintAchievementNFT();
+            // After minting NFT, also complete the quest
+            await completeQuestOnChain(quest.id);
           } else {
             // User performed action externally, just complete on-chain
             txHash = await completeQuestOnChain(quest.id);
@@ -120,7 +122,7 @@ export function useQuestVerification() {
           break;
 
         case QuestType.SOCIAL:
-          // Social quests are verified client-side only (no on-chain call)
+          // Social quests don't require on-chain verification, just mark complete
           verificationPassed = true;
           break;
 

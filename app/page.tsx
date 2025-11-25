@@ -11,38 +11,36 @@ import { Quest, QuestStatus } from '../types';
 import { Sparkles, Trophy, Lock, Award } from 'lucide-react';
 import { QUEST_QUEST_ADDRESS, QUEST_QUEST_ABI } from '../lib/contract';
 
-const getTodayString = () =>
-  new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const getTodayString = () => {
+  const date = new Date();
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+};
 
-const getDayId = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+const getDayId = () => {
+  const date = new Date();
+  return date.toISOString().slice(0, 10).replace(/-/g, '');
+};
 
 export default function Page() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
-
+  
   const [quests, setQuests] = useState<Quest[]>([]);
   const [isClaimed, setIsClaimed] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  const { data: questStatuses } = useReadContract({
-    address: QUEST_QUEST_ADDRESS,
-    abi: QUEST_QUEST_ABI,
-    functionName: 'getUserQuestStatus',
-    args: address ? [address, BigInt(0)] : undefined,
-    query: { enabled: !!address },
-  });
+  // Check quest completion status for each quest
+  const questIds = MOCK_QUESTS.map(q => q.id);
 
   const completedCount = useMemo(
     () => quests.filter((q) => q.status === QuestStatus.COMPLETED).length,
     [quests]
   );
-
   const progressPercentage = useMemo(
     () => (quests.length > 0 ? (completedCount / quests.length) * 100 : 0),
     [quests, completedCount]
   );
-
   const allCompleted = quests.length > 0 && completedCount === quests.length;
 
   useEffect(() => {
@@ -55,7 +53,9 @@ export default function Page() {
 
   const handleConnect = async () => {
     const connector = connectors[0];
-    if (connector) connect({ connector });
+    if (connector) {
+      connect({ connector });
+    }
   };
 
   const handleDisconnect = () => {
@@ -65,6 +65,7 @@ export default function Page() {
   };
 
   const handleVerifyQuest = (id: number) => {
+    console.log('Quest completed:', id);
     setQuests((prev) =>
       prev.map((q) => (q.id === id ? { ...q, status: QuestStatus.COMPLETED } : q))
     );
@@ -95,7 +96,6 @@ export default function Page() {
               {getTodayString()}
             </p>
           </div>
-
           <button
             onClick={() => setShowLeaderboard(!showLeaderboard)}
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
@@ -104,6 +104,14 @@ export default function Page() {
             {showLeaderboard ? 'Quests' : 'Leaderboard'}
           </button>
         </div>
+
+        {/* Debug Info */}
+        {address && (
+          <div className="mb-4 p-4 bg-slate-800 rounded-lg text-xs font-mono">
+            <div>Connected: {address}</div>
+            <div>Completed: {completedCount}</div>
+          </div>
+        )}
 
         {showLeaderboard ? (
           <Leaderboard />
@@ -129,7 +137,6 @@ export default function Page() {
                     {completedCount} / {quests.length} Completed
                   </div>
                 </div>
-
                 <div className="text-right">
                   {allCompleted ? (
                     <span className="text-green-400 font-bold flex items-center gap-1">
@@ -142,7 +149,6 @@ export default function Page() {
                   )}
                 </div>
               </div>
-
               <div className="h-4 bg-slate-800 rounded-full overflow-hidden relative">
                 <div
                   className="h-full bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-700 ease-out relative"
@@ -153,7 +159,6 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Quest List */}
             <div className="space-y-4">
               {quests.map((quest) => (
                 <QuestItem

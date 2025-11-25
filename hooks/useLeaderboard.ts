@@ -23,8 +23,8 @@ export function useLeaderboard(limit: number = 10, refreshInterval: number = 100
   // Transform data to include rank
   const players: LeaderboardPlayer[] = data
     ? (data as any[]).map((player, index) => ({
-        player: player.player,
-        xp: player.xp,
+        player: player.playerAddress,
+        xp: player.totalXP,
         questsCompleted: player.questsCompleted,
         rank: index + 1,
       }))
