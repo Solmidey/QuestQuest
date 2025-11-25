@@ -1,8 +1,15 @@
 {
-  "name": "QuestQuest",
-  "description": "Complete daily quests, earn NFT badges, share achievements",
-  "icon": "https://yourdomain.com/icon.png",
-  "url": "https://questquest.vercel.app",
-  "requested_permissions": ["signer", "post", "storage"],
-  "redirect_urls": ["https://questquest.vercel.app/*"]
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
+    "payload": "eyJkb21haW4iOiJxdWVzdHF1ZXN0LmFwcCJ9",
+    "signature": "MHg..."
+  },
+  "frame": {
+    "version": "next",
+    "name": "QuestQuest",
+    "iconUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app/icon.png",
+    "splashImageUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app/splash.png",
+    "splashBackgroundColor": "#0f172a",
+    "homeUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app"
+  }
 }

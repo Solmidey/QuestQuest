@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAccount, useConnect, useDisconnect, useReadContract } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { Navbar } from '../components/Navbar';
 import { QuestItem } from '../components/QuestItem';
 import { BadgeReward } from '../components/BadgeReward';
 import { Leaderboard } from '../components/Leaderboard';
+import { FarcasterLogin } from '../components/FarcasterLogin';
 import { MOCK_QUESTS } from '../constants';
 import { Quest, QuestStatus } from '../types';
-import { Sparkles, Trophy, Lock, Award } from 'lucide-react';
-import { QUEST_QUEST_ADDRESS, QUEST_QUEST_ABI } from '../lib/contract';
+import { Sparkles, Trophy, Lock, Award, Share2 } from 'lucide-react';
+import sdk from '@farcaster/frame-sdk';
 
 const getTodayString = () => {
   const date = new Date();
@@ -29,9 +30,8 @@ export default function Page() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [isClaimed, setIsClaimed] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-
-  // Check quest completion status for each quest
-  const questIds = MOCK_QUESTS.map(q => q.id);
+  const [farcasterUser, setFarcasterUser] = useState<{ fid: number; username: string } | null>(null);
+  const [isInFrame, setIsInFrame] = useState(false);
 
   const completedCount = useMemo(
     () => quests.filter((q) => q.status === QuestStatus.COMPLETED).length,
@@ -44,6 +44,17 @@ export default function Page() {
   const allCompleted = quests.length > 0 && completedCount === quests.length;
 
   useEffect(() => {
+    // Check if running in Farcaster Frame
+    const checkFrame = async () => {
+      try {
+        const context = await sdk.context;
+        setIsInFrame(!!context);
+      } catch (e) {
+        setIsInFrame(false);
+      }
+    };
+    checkFrame();
+
     const initialQuests = MOCK_QUESTS.map((q) => ({
       ...q,
       status: QuestStatus.PENDING,
@@ -65,7 +76,6 @@ export default function Page() {
   };
 
   const handleVerifyQuest = (id: number) => {
-    console.log('Quest completed:', id);
     setQuests((prev) =>
       prev.map((q) => (q.id === id ? { ...q, status: QuestStatus.COMPLETED } : q))
     );
@@ -76,8 +86,32 @@ export default function Page() {
     setIsClaimed(true);
   };
 
+  const handleFarcasterLogin = (fid: number, username: string) => {
+    setFarcasterUser({ fid, username });
+  };
+
+  const shareToFarcaster = async () => {
+    const text = `I just completed ${completedCount}/${quests.length} quests on QuestQuest! 🎯⚔️\n\nJoin me on Base: ${window.location.origin}`;
+    
+    if (isInFrame) {
+      // Share within Farcaster
+      sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
+    } else {
+      // Open Warpcast compose
+      window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
+      {isInFrame && farcasterUser && (
+        <div className="bg-purple-900/30 border-b border-purple-500/30 py-2 px-4 text-center">
+          <span className="text-purple-300 text-sm">
+            Playing as @{farcasterUser.username} • FID: {farcasterUser.fid}
+          </span>
+        </div>
+      )}
+
       <Navbar
         walletAddress={address || null}
         isConnecting={false}
@@ -86,7 +120,7 @@ export default function Page() {
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-20">
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-8 flex justify-between items-center flex-wrap gap-4">
           <div className="text-center sm:text-left">
             <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2">
               Today's Quests
@@ -96,22 +130,29 @@ export default function Page() {
               {getTodayString()}
             </p>
           </div>
-          <button
-            onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-          >
-            <Award className="w-5 h-5" />
-            {showLeaderboard ? 'Quests' : 'Leaderboard'}
-          </button>
-        </div>
-
-        {/* Debug Info */}
-        {address && (
-          <div className="mb-4 p-4 bg-slate-800 rounded-lg text-xs font-mono">
-            <div>Connected: {address}</div>
-            <div>Completed: {completedCount}</div>
+          
+          <div className="flex gap-2">
+            {isInFrame && <FarcasterLogin onLogin={handleFarcasterLogin} />}
+            
+            {completedCount > 0 && (
+              <button
+                onClick={shareToFarcaster}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors"
+              >
+                <Share2 className="w-5 h-5" />
+                Share
+              </button>
+            )}
+            
+            <button
+              onClick={() => setShowLeaderboard(!showLeaderboard)}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+            >
+              <Award className="w-5 h-5" />
+              {showLeaderboard ? 'Quests' : 'Leaderboard'}
+            </button>
           </div>
-        )}
+        </div>
 
         {showLeaderboard ? (
           <Leaderboard />

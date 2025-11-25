@@ -5,6 +5,18 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "QuestQuest - Daily Quests & NFT Rewards",
   description: "Complete daily quests and earn NFT rewards on Base",
+  openGraph: {
+    title: "QuestQuest - Daily Quests & NFT Rewards",
+    description: "Complete daily quests and earn NFT rewards on Base",
+    images: ["/og-image.png"],
+  },
+  other: {
+    "fc:frame": "vNext",
+    "fc:frame:image": `${process.env.NEXT_PUBLIC_URL || 'https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app'}/api/og`,
+    "fc:frame:button:1": "Start Questing",
+    "fc:frame:button:1:action": "link",
+    "fc:frame:button:1:target": process.env.NEXT_PUBLIC_URL || 'https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app',
+  },
 };
 
 export default function RootLayout({
