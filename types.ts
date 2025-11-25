@@ -1,40 +1,43 @@
 export enum QuestType {
-  ONCHAIN_TX = 'ONCHAIN_TX',
-  SIGNATURE = 'SIGNATURE',
+  ONCHAIN = 'ONCHAIN',
   SOCIAL = 'SOCIAL',
-  BALANCE = 'BALANCE'
+  BALANCE = 'BALANCE',
+  SIGNATURE = 'SIGNATURE',
 }
 
 export enum QuestStatus {
   PENDING = 'PENDING',
   VERIFYING = 'VERIFYING',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export interface Quest {
   id: number;
   title: string;
   description: string;
-  xp: number;
   type: QuestType;
-  actionLabel: string;
   status: QuestStatus;
+  xpReward: number;
+  
+  // Optional fields based on quest type
+  redirectUrl?: string; // For ONCHAIN & SOCIAL
+  balanceThreshold?: string; // For BALANCE (in ETH)
+  tokenAddress?: string | null; // null = native ETH
+  requiresTx?: boolean; // For ONCHAIN - requires tx submission
+  signatureMessage?: string; // For SIGNATURE
 }
 
-export interface DailyData {
-  dayId: string; // Format: YYYYMMDD
-  dateLabel: string;
-  isRewardClaimed: boolean;
-  quests: Quest[];
+export interface LeaderboardPlayer {
+  player: string;
+  xp: bigint;
+  questsCompleted: bigint;
+  rank: number;
 }
 
 export interface BadgeMetadata {
   tokenId: string;
   name: string;
   image: string;
-  attributes: {
-    trait_type: string;
-    value: string | number;
-  }[];
+  attributes: Array<{ trait_type: string; value: string }>;
 }

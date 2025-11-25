@@ -1,94 +1,83 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useReadContract } from 'wagmi';
 import { Navbar } from '../components/Navbar';
 import { QuestItem } from '../components/QuestItem';
 import { BadgeReward } from '../components/BadgeReward';
+import { Leaderboard } from '../components/Leaderboard';
 import { MOCK_QUESTS } from '../constants';
 import { Quest, QuestStatus } from '../types';
-import { verifyQuestOnChain, mintDailyBadge } from '../services/mockChain';
 import { Sparkles, Trophy, Lock, Award } from 'lucide-react';
+import { QUEST_QUEST_ADDRESS, QUEST_QUEST_ABI } from '../lib/contract';
 
-const getTodayString = () => {
-  const date = new Date();
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-};
+const getTodayString = () =>
+  new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-const getDayId = () => {
-  const date = new Date();
-  return date.toISOString().slice(0, 10).replace(/-/g, '');
-};
+const getDayId = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
 export default function Page() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
-  
+
   const [quests, setQuests] = useState<Quest[]>([]);
   const [isClaimed, setIsClaimed] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  const completedCount = useMemo(() => quests.filter(q => q.status === QuestStatus.COMPLETED).length, [quests]);
-  const progressPercentage = useMemo(() => (quests.length > 0 ? (completedCount / quests.length) * 100 : 0), [quests, completedCount]);
+  const { data: questStatuses } = useReadContract({
+    address: QUEST_QUEST_ADDRESS,
+    abi: QUEST_QUEST_ABI,
+    functionName: 'getUserQuestStatus',
+    args: address ? [address, BigInt(0)] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const completedCount = useMemo(
+    () => quests.filter((q) => q.status === QuestStatus.COMPLETED).length,
+    [quests]
+  );
+
+  const progressPercentage = useMemo(
+    () => (quests.length > 0 ? (completedCount / quests.length) * 100 : 0),
+    [quests, completedCount]
+  );
+
   const allCompleted = quests.length > 0 && completedCount === quests.length;
 
   useEffect(() => {
-    const initialQuests = MOCK_QUESTS.map(q => ({
+    const initialQuests = MOCK_QUESTS.map((q) => ({
       ...q,
-      type: q.type as any,
-      status: QuestStatus.PENDING
+      status: QuestStatus.PENDING,
     }));
     setQuests(initialQuests);
   }, []);
 
   const handleConnect = async () => {
     const connector = connectors[0];
-    if (connector) {
-      connect({ connector });
-    }
+    if (connector) connect({ connector });
   };
 
   const handleDisconnect = () => {
     disconnect();
-    setQuests(prev => prev.map(q => ({ ...q, status: QuestStatus.PENDING })));
+    setQuests((prev) => prev.map((q) => ({ ...q, status: QuestStatus.PENDING })));
     setIsClaimed(false);
   };
 
-  const handleVerifyQuest = async (id: number) => {
-    if (!address) return;
-
-    setQuests(prev => prev.map(q => q.id === id ? { ...q, status: QuestStatus.VERIFYING } : q));
-
-    try {
-      const success = await verifyQuestOnChain(id, address);
-      
-      setQuests(prev => prev.map(q => 
-        q.id === id ? { ...q, status: success ? QuestStatus.COMPLETED : QuestStatus.FAILED } : q
-      ));
-    } catch (e) {
-      setQuests(prev => prev.map(q => q.id === id ? { ...q, status: QuestStatus.FAILED } : q));
-    }
+  const handleVerifyQuest = (id: number) => {
+    setQuests((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, status: QuestStatus.COMPLETED } : q))
+    );
   };
 
-  const handleClaimReward = async () => {
+  const handleClaimReward = () => {
     if (!address || !allCompleted) return;
-    
-    setIsMinting(true);
-    try {
-      await mintDailyBadge(getDayId(), address);
-      setIsClaimed(true);
-    } catch (e) {
-      console.error("Mint failed", e);
-    } finally {
-      setIsMinting(false);
-    }
+    setIsClaimed(true);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-base-blue selection:text-white">
-      <Navbar 
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
+      <Navbar
         walletAddress={address || null}
         isConnecting={false}
         onConnect={handleConnect}
@@ -96,7 +85,6 @@ export default function Page() {
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-20">
-        
         <div className="mb-8 flex justify-between items-center">
           <div className="text-center sm:text-left">
             <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2">
@@ -107,77 +95,56 @@ export default function Page() {
               {getTodayString()}
             </p>
           </div>
+
           <button
             onClick={() => setShowLeaderboard(!showLeaderboard)}
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
           >
             <Award className="w-5 h-5" />
-            Leaderboard
+            {showLeaderboard ? 'Quests' : 'Leaderboard'}
           </button>
         </div>
 
         {showLeaderboard ? (
-          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
-            <h2 className="text-2xl font-bold mb-4">🏆 Top Questers</h2>
-            <div className="space-y-3">
-              {[
-                { rank: 1, address: '0x1234...5678', quests: 150, badges: 45 },
-                { rank: 2, address: '0xabcd...ef00', quests: 142, badges: 42 },
-                { rank: 3, address: '0x9876...5432', quests: 138, badges: 41 },
-                { rank: 4, address: address || '0x0000...0000', quests: completedCount, badges: isClaimed ? 1 : 0 },
-              ].map((player) => (
-                <div
-                  key={player.rank}
-                  className={`flex items-center justify-between p-4 rounded-lg ${
-                    player.address === address
-                      ? 'bg-blue-500/20 border border-blue-500/50'
-                      : 'bg-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-slate-500">#{player.rank}</div>
-                    <div>
-                      <div className="font-mono text-sm">{player.address}</div>
-                      <div className="text-xs text-slate-400">
-                        {player.quests} quests · {player.badges} badges
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Leaderboard />
         ) : isClaimed ? (
-          <BadgeReward 
+          <BadgeReward
             dayLabel={getTodayString()}
             metadata={{
               tokenId: getDayId(),
               name: `QuestQuest Master ${getDayId()}`,
-              image: "",
-              attributes: [{ trait_type: "Day", value: getDayId() }]
+              image: '',
+              attributes: [{ trait_type: 'Day', value: getDayId() }],
             }}
           />
         ) : (
           <div className="space-y-8 animate-[slideUp_0.4s_ease-out]">
-            
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
               <div className="flex justify-between items-end mb-4">
                 <div>
-                  <div className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-1">Daily Progress</div>
-                  <div className="text-2xl font-bold text-white">{completedCount} / {quests.length} Completed</div>
+                  <div className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-1">
+                    Daily Progress
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {completedCount} / {quests.length} Completed
+                  </div>
                 </div>
+
                 <div className="text-right">
                   {allCompleted ? (
                     <span className="text-green-400 font-bold flex items-center gap-1">
                       <Sparkles className="w-4 h-4" /> Ready to Claim
                     </span>
                   ) : (
-                    <span className="text-base-blue font-medium">{Math.round(progressPercentage)}%</span>
+                    <span className="text-blue-400 font-medium">
+                      {Math.round(progressPercentage)}%
+                    </span>
                   )}
                 </div>
               </div>
+
               <div className="h-4 bg-slate-800 rounded-full overflow-hidden relative">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-700 ease-out relative"
                   style={{ width: `${progressPercentage}%` }}
                 >
@@ -186,9 +153,10 @@ export default function Page() {
               </div>
             </div>
 
+            {/* Quest List */}
             <div className="space-y-4">
               {quests.map((quest) => (
-                <QuestItem 
+                <QuestItem
                   key={quest.id}
                   quest={quest}
                   onVerify={handleVerifyQuest}
@@ -208,17 +176,10 @@ export default function Page() {
               <div className="fixed bottom-6 left-0 right-0 px-4 flex justify-center z-40">
                 <button
                   onClick={handleClaimReward}
-                  disabled={isMinting}
-                  className="max-w-md w-full bg-gradient-to-r from-base-blue to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transform transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-80 disabled:transform-none"
+                  className="max-w-md w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transform transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
                 >
-                  {isMinting ? (
-                    <>Minting Reward...</>
-                  ) : (
-                    <>
-                      <Trophy className="w-6 h-6" />
-                      Claim Daily Badge
-                    </>
-                  )}
+                  <Trophy className="w-6 h-6" />
+                  Claim Daily Badge
                 </button>
               </div>
             )}
