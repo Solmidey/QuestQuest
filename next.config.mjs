@@ -3,15 +3,11 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/manifest.json',
+        source: '/:path*',
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
             value: '*',
-          },
-          {
-            key: 'Content-Type',
-            value: 'application/json',
           },
         ],
       },
