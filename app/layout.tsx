@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   },
   other: {
     "fc:frame": "vNext",
-    "fc:frame:image": `${process.env.NEXT_PUBLIC_URL || 'https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app'}/api/og`,
+    "fc:frame:image": `${process.env.NEXT_PUBLIC_URL || 'https://quest-quest-weld.vercel.app'}/api/og`,
     "fc:frame:button:1": "Start Questing",
     "fc:frame:button:1:action": "link",
-    "fc:frame:button:1:target": process.env.NEXT_PUBLIC_URL || 'https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app',
+    "fc:frame:button:1:target": process.env.NEXT_PUBLIC_URL || 'https://quest-quest-weld.vercel.app',
   },
 };
 

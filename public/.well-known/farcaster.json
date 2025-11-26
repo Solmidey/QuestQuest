@@ -2,10 +2,7 @@
   "frame": {
     "version": "next",
     "name": "QuestQuest",
-    "iconUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app/icon.png",
-    "splashImageUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app/splash.png",
-    "splashBackgroundColor": "#0f172a",
-    "homeUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app",
-    "webhookUrl": "https://quest-quest-i0odu5zb9-kamikaitens-projects.vercel.app/api/webhook"
+    "iconUrl": "https://quest-quest-weld.vercel.app/icon.png",
+    "homeUrl": "https://quest-quest-weld.vercel.app"
   }
 }
