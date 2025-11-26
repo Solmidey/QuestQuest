@@ -3,6 +3,8 @@
     "version": "next",
     "name": "QuestQuest",
     "iconUrl": "https://quest-quest-weld.vercel.app/icon.png",
+    "splashImageUrl": "https://quest-quest-weld.vercel.app/splash.png",
+    "splashBackgroundColor": "#0f172a",
     "homeUrl": "https://quest-quest-weld.vercel.app"
   }
 }
