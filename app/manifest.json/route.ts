@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const manifest = {
+    frame: {
+      name: "QuestQuest",
+      version: "1",
+      iconUrl: "https://quest-quest-weld.vercel.app/icon.png",
+      homeUrl: "https://quest-quest-weld.vercel.app",
+      subtitle: "Complete quests, earn NFT badges on Base",
+      description: "QuestQuest is a daily quest platform on Base where users complete on-chain challenges, social tasks, and earn XP to climb the leaderboard. Mint NFT achievement badges as proof of completion!",
+      primaryCategory: "games",
+      splashImageUrl: "https://quest-quest-weld.vercel.app/splash.png",
+      splashBackgroundColor: "#0f172a",
+      tags: [
+        "quests",
+        "nft",
+        "base",
+        "blockchain",
+        "social"
+      ],
+      tagline: "Daily quests on Base",
+      buttonTitle: "Start Questing",
+      ogTitle: "QuestQuest - Quests on Base",
+      ogDescription: "I'm completing daily quests and earning NFT badges on Base! Join me on QuestQuest.",
+      ogImageUrl: "https://quest-quest-weld.vercel.app/og-image.png",
+      castShareUrl: "https://warpcast.com/~/compose?text=Join%20me%20on%20QuestQuest!&embeds[]=https://quest-quest-weld.vercel.app"
+    },
+    accountAssociation: {
+      header: "eyJmaWQiOjg2MTE1NCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDIyNDMxY0YwNTk0MTkwZDUyRDMzOWQxOTE3MEVFOTNhNjc3MjA4ZDAifQ",
+      payload: "eyJkb21haW4iOiJxdWVzdC1xdWVzdC13ZWxkLnZlcmNlbC5hcHAifQ",
+      signature: "KNDvT/YHmdorhct87QpR6YqHCLkXvWaMA+YnIseA2StNlz+wg2g6KX8+eYo48PhIAFAlQV9+HKJSUhrxu58kZBs="
+    }
+  };
+
+  return NextResponse.json(manifest, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Cache-Control': 'no-cache',
+    },
+  });
+}
