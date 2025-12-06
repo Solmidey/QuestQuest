@@ -32,12 +32,8 @@ export function useQuestVerification() {
     if (!address || !quest.signatureMessage) return false;
     
     try {
-      const signature = await signMessageAsync({ 
-      if (typeof window !== "undefined") { localStorage.setItem("questquest_pledge_done","1"); localStorage.setItem("questquest_pledge_sig", signature); }
-      return true;
-        account: address,
-        message: quest.signatureMessage,
-      });
+      const signature = await signMessageAsync({ message: quest.signatureMessage });
+      if (quest?.title === \"Sign the Pledge\" && typeof window !== \"undefined\") { localStorage.setItem(\"questquest_pledge_done\",\"1\"); localStorage.setItem(\"questquest_pledge_sig\", signature); }
       
       // Recover address from signature to verify it matches
       const recoveredAddress = await recoverMessageAddress({
