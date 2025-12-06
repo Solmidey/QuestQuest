@@ -33,6 +33,8 @@ export function useQuestVerification() {
     
     try {
       const signature = await signMessageAsync({ 
+      if (typeof window !== "undefined") { localStorage.setItem("questquest_pledge_done","1"); localStorage.setItem("questquest_pledge_sig", signature); }
+      return true;
         account: address,
         message: quest.signatureMessage,
       });
