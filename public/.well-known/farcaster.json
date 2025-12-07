@@ -24,9 +24,9 @@
     "castShareUrl": "https://quest-quest-weld.vercel.app/share"
   },
   "accountAssociation": {
-    "header": "eyJmaWQiOjg2MTE1NCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDIyNDMxY0YwNTk0MTkwZDUyRDMzOWQxOTE3MEVFOTNhNjc3MjA4ZDAifQ",
+    "header": "eyJmaWQiOjg2MTE1NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGVjRDIzMzRlMTY4NDlBNEE3QUEwYjU4QkJiMWVlYUFFMTc2YTk5NTMifQ",
     "payload": "eyJkb21haW4iOiJxdWVzdC1xdWVzdC13ZWxkLnZlcmNlbC5hcHAifQ",
-    "signature": "KNDvT/YHmdorhct87QpR6YqHCLkXvWaMA+YnIseA2StNlz+wg2g6KX8+eYo48PhIAFAlQV9+HKJSUhrxu58kZBs="
+    "signature": "80sKHAMlgA64gaMNHNfdza/ZSZ/sSXQVNrhBwZ2IK29w1MjkzEcqWXonxe/U9hx0od5/UWJr88vD6s1j9jHHnhw="
   },
   "miniapp": {
     "name": "QuestQuest",
